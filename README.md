@@ -8,7 +8,7 @@ Ranepa telegram bot for education (computer science)
 2. Полученный токенн в [BotFather](https://t.me/BotFather) вставить в созданный файл `.env`
 
 ```
-TOKEN=<7277359589:AAFkX0OTMrqRfHYb70vWbVHXBO_eZAa-oLA>
+TOKEN=<Ваш токен>
 ```
 
 3. Для запуска проекта введите в консоли
