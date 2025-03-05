@@ -1,13 +1,12 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
-from config import TOKEN
 
-bot = Bot(token=TOKEN)
+bot = Bot(token="Your token")
 dp = Dispatcher()
 
-# Бот принимает команды, например /start.
-# Декоратор - обертка для функций
+
+@dp.message(Command('start'))
 async def process_start_command(message):
     await message.answer("Привет!")
 
