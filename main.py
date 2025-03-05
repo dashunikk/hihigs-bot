@@ -3,6 +3,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from config import TOKEN
 
+
+#Экземпляр бота и деспетчера
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
