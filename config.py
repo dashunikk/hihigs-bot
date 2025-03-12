@@ -3,9 +3,5 @@ import os
 
 load_dotenv()  # take environment variables from .env.
 
-# загрузка токена
-TOKEN=os.getenv("TOKEN")
-
 #Загрузка токена
 TOKEN = os.getenv("TOKEN")
-
