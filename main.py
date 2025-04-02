@@ -2,8 +2,8 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 from config import TOKEN
-from handlers import register_message_handlers, set_my_commands
-
+from handlers import router
+from utils import setup_logger
 
 async def main():
     """
@@ -12,18 +12,16 @@ async def main():
     и добавить полученный токен в файл .env
     """
 
+    #Экземпляры бота и диспетчеры
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
+    setup_logger(fname=__name__)
 
-    # Здесь функция для вызова хендлеров из handlers.py
-    register_message_handlers()
-
-    # Здесь вызов меню с командами бота
-    set_my_commands
+    #Определение маршрутизации для диспетчера из handlers
+    dp.include_routers(router)
 
     # Запуск бота в polling-режиме
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
