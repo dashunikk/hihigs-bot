@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher
 from config import TOKEN
 from handlers import router
 from utils import setup_logger
+from handlers import set_commands
 
 async def main():
     """
@@ -16,6 +17,9 @@ async def main():
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
     setup_logger(fname=__name__)
+
+    # запуск команд
+    await set_commands(bot)
 
     #Определение маршрутизации для диспетчера из handlers
     dp.include_routers(router)
