@@ -19,17 +19,14 @@ python3 -m venv .venv
 pip install -r requirements.txt
 ```
 
-4. Полученный токен в [BotFather](https://t.me/BotFather) вставить в созданный файл .env
-
-```
-TOKEN=<ВАШ ТОКЕН>
-```
-
 5. Для запуска проекта введите в консоли
 
 ```
 python3 main.py
 ```
+
+6. Создайте папку log и файл .env
+
 ### Запуск docker-контейнера
 
 1. Для запуска проекта в контейнере стяните его с помощью git clone. Проект содержит Dockerfile и docker-compose.yml
@@ -87,3 +84,5 @@ docker-compose down
 ```
 docker-compose restart
 ```
+
+6. Создайте папку log
