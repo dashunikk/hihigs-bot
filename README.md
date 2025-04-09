@@ -24,6 +24,9 @@ pip install -r requirements.txt
 ```
 python3 main.py
 ```
+
+6. Создайте папку log и файл .env
+
 ### Запуск docker-контейнера
 
 1. Для запуска проекта в контейнере стяните его с помощью git clone. Проект содержит Dockerfile и docker-compose.yml
@@ -49,7 +52,7 @@ docker ps
 4. Для автоматизированной сборки нескольких контейнеров воспользуйтесь docker-compose
 
 ```
-docker-compose -up --build -d
+docker-compose up --build -d
 ```
 
 Проверить состоятние запущенного контейнера для docker-compose
@@ -81,3 +84,5 @@ docker-compose down
 ```
 docker-compose restart
 ```
+
+6. Создайте папку log

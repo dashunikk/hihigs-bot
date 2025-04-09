@@ -2,7 +2,6 @@ from aiogram.types import CallbackQuery
 from aiogram import Router, F
 router = Router()
 
-
 @router.callback_query(F.data == 'love_programming')
 async def callback_message(call: CallbackQuery):
     await call.answer()
