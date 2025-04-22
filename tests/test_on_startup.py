@@ -7,9 +7,9 @@ parent = Path(f"{os.getcwd()}").parent
 
 
 def test_logs_folder_exists():
-    log_path = Path(f"{parent}/log")
-    assert log_path.exists(), "Папка log/ не найдена"
-    assert log_path.is_dir(), "log/ существует, но не является директорией"
+    logs_path = Path(f"{parent}/log")
+    assert logs_path.exists(), "Папка log/ не найдена"
+    assert logs_path.is_dir(), "log/ существует, но не является директорией"
 
 
 def test_env_file_exists():
