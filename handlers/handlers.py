@@ -11,11 +11,11 @@ from .callbacks import callback_message  # импорт из коллбека
 router = Router()
 
 @router.message(Command("help"))
-async def process_help_command_handler(message):
+async def process_help_command(message):
     '''Команда help'''
     await message.answer("Помоги!", reply_markup=keyboards)
 
 @router.message(Command(commands=["start", "status"]))
-async def process_start_command_handler(message):
+async def process_start_command(message):
     '''Команда status'''
     await message.reply(f"{message.from_user.id}, {message.from_user.username}")

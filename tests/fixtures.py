@@ -11,9 +11,11 @@ from aiogram import Router
 def mock_message():
     """Mock сообщение"""
     mock_msg = AsyncMock(spec=Message)
-    mock_msg.answer = AsyncMock()
+    mock_msg.answer =AsyncMock()
+    mock_msg.from_user = AsyncMock()
+    mock_msg.from_user.id = AsyncMock()
+    mock_msg.from_user.username = AsyncMock()
     return mock_msg
-
 
 @pytest.fixture
 def mock_router():
