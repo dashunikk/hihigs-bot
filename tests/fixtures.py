@@ -14,7 +14,7 @@ def mock_bot():
     """Mock бот"""
     with patch("main.Bot") as mock_bot_cls:
         mock_bot_instance = AsyncMock()
-        mock_bot_cls.return_value =mock_bot_instance
+        mock_bot_cls.return_value = mock_bot_instance
         yield mock_bot_instance
 
 
