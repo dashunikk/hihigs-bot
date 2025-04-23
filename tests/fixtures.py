@@ -55,17 +55,8 @@ def mock_message():
     mock_message.reply = AsyncMock()
     return mock_msg
 
-# @pytest.fixture
-# def mock_callback_query():
-#     """Mock CallbackQuery"""
-#     mock_call = AsyncMock(spec=CallbackQuery)
-#     mock_call.message = AsyncMock()
-#     mock_call.answer = AsyncMock()
-#     return mock_call
-
-
 @pytest.fixture
-def mock_routers():
+def mock_router():
     """Mock роутер"""
     router = Router()
     router_handlers = AsyncMock()
