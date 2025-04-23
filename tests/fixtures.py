@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from aiogram import Router
 
 # Фикстуры в pytest позволяют выносить в отдельные функции типовые действия
@@ -19,6 +19,7 @@ def mock_message():
     mock_msg.message = AsyncMock()
     mock_msg.message.answer = AsyncMock()
 
+    mock_message.reply = AsyncMock()
     return mock_msg
 
 # @pytest.fixture
