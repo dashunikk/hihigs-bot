@@ -16,15 +16,18 @@ def mock_message():
     mock_msg.from_user = AsyncMock()
     mock_msg.from_user.id = AsyncMock()
     mock_msg.from_user.username = AsyncMock()
+    mock_msg.message = AsyncMock()
+    mock_msg.message.answer = AsyncMock()
+
     return mock_msg
 
-@pytest.fixture
-def mock_callback_query():
-    """Mock CallbackQuery"""
-    mock_call = AsyncMock(spec=CallbackQuery)
-    mock_call.message = AsyncMock()
-    mock_call.answer = AsyncMock()
-    return mock_call
+# @pytest.fixture
+# def mock_callback_query():
+#     """Mock CallbackQuery"""
+#     mock_call = AsyncMock(spec=CallbackQuery)
+#     mock_call.message = AsyncMock()
+#     mock_call.answer = AsyncMock()
+#     return mock_call
 
 
 @pytest.fixture
