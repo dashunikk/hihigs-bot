@@ -19,10 +19,10 @@ def mock_bot():
 
 
 @pytest.fixture
-def mock_set_my_commands():
+def mock_set_commands():
     """"Mock создание меню"""
     with patch("main.set_commands", new_callable=AsyncMock) as mock:
-        yield mock_set_my_commands
+        yield mock_set_commands
 
 @pytest.fixture
 def mock_setup_logger():
