@@ -19,3 +19,12 @@ async def process_help_command(message):
 async def process_start_command(message):
     '''Команда status'''
     await message.reply(f"{message.from_user.id}, {message.from_user.username}")
+
+    #TODO - выбор слушатель/преподаватель, если уже зарегистрирован в бд, то
+    #async with async_session() as session:
+    #     querty = select(User).where(message.from_user.id == User.user_id)
+    #     result = await session.execute(querty)
+    #     if result.scalars().all():
+    #         pass
+    #     else:
+    #         pass
