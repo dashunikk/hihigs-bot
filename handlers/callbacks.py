@@ -1,28 +1,33 @@
+import logging
+import string
+import logging
+from random import choices
 from aiogram.types import CallbackQuery
 from aiogram import Router, F
+from sqlalchemy import insert
+from db import async_session, User
 
-from db import async_session
 
 router = Router()
 
-@router.callback_query(F.data == 'love_programming')
-async def callback_message(call: CallbackQuery):
-    await call.answer()
-    await call.message.answer("Я БОЛЬШЕ НЕ МОГУ")
+async def callback_message(callback:  CallbackQuery):
+    """Ответ на кнопку"""
+    await callback.message.answer("Успешно!")
 
-@router.callback_query(F.data == 'favorite_teacher')
-async def callback2_message(call: CallbackQuery):
-    await call.answer()
-    await call.message.answer("мой тоже :З")
 
-@router.callback_query(F.data == 'life_without_python')
-async def callback3_message(call: CallbackQuery):
-    await call.answer()
-    await call.message.answer("легко и просто")
+async def callback_start_tutor(callback: CallbackQuery):
+    """Регистрация преподавателя"""
 
-    #TODO - два коллбек-ответа на кнопку слушатель/преподаватель
-    #async with async_session() as session:
-    #   """Что-то происходит"""
-    #   insert_query = insert(User).values()
-    #   await session.execute(insert_query)
-    #   await session.commit()
+    async with async_session() as session:
+        """Что-то происходит"""
+        chars = string.ascii_letters + string.digits + string.punctuation
+        new_user = {
+            "user_id": callback.from_user.id,
+            "username": callback.from_user.username,
+            "tutorcode": "".join(choices(chars, k=6))
+        }
+        insert_query = insert(User).values()
+        await session.execute(insert_query)
+        await session.commit()
+        await callback.message.answer("Пользователь добавлен!")
+        logging.info(f"Пользователь {callback.from_user.username} добавлен в базу данных с ролью преподаватель!")
