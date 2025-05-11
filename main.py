@@ -1,12 +1,14 @@
 # version 1.0.1
 import asyncio
+import logging
+
 from aiogram import Bot, Dispatcher
 from config import TOKEN
 from handlers import router as router_handlers
 from utils import setup_logger
 from handlers import set_commands
 from handlers.callbacks import router as router_callbacks
-
+from db import async_create_table
 
 async def main():
     """
@@ -31,4 +33,8 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(async_create_table())
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("End Script")
