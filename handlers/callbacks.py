@@ -1,22 +1,20 @@
 import logging
 import string
-import logging
 from random import choices
 from aiogram.types import CallbackQuery
-from aiogram import Router, F
 from sqlalchemy import insert
 from db import async_session, User
-
-
-router = Router()
 
 async def callback_message(callback:  CallbackQuery):
     """Ответ на кнопку"""
     await callback.message.answer("Успешно!")
 
-
 async def callback_start_tutor(callback: CallbackQuery):
     """Регистрация преподавателя"""
+    await callback.message.answer("Вы выбрали роль преподавателя!")
+
+async def callback_start_student(callback: CallbackQuery):
+    await callback.message.answer("Вы выбрали роль студента!")
 
     async with async_session() as session:
         """Что-то происходит"""
@@ -31,3 +29,4 @@ async def callback_start_tutor(callback: CallbackQuery):
         await session.commit()
         await callback.message.answer("Пользователь добавлен!")
         logging.info(f"Пользователь {callback.from_user.username} добавлен в базу данных с ролью преподаватель!")
+

@@ -33,4 +33,4 @@ async def register_message_handlers(router: Router):
     """Маршрутизация обработчиков"""
     router.message.register(process_start_command, filters.Command(commands=["start", "status"]))
     router.callback_query.register(callback_message, F.data.endswith("_continue"))
-    router.callback_query.register(callback_start_tutor), F.data.endswith("_tutor")
+    router.callback_query.register(callback_start_tutor, F.data.endswith("_tutor"))

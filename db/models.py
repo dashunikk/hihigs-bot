@@ -17,7 +17,6 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "user_table"
-
     user_id = Column(Integer, primary_key=True)
     username = Column(VARCHAR(255), unique=False, nullable=False)
     tutorcode = Column(VARCHAR(6), unique=False)
