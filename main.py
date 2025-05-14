@@ -8,7 +8,8 @@ from handlers import register_message_handlers
 from utils import setup_logger
 from handlers import set_commands
 from db import async_create_table
-from handlers.callbacks import callback_message, callback_start_tutor, callback_start_student
+from handlers.callbacks import callback_message, callback_start_tutor
+#callback_start_student
 
 async def main():
     """
@@ -35,7 +36,7 @@ async def main():
     # Регистрация обработчиков коллбеков
     await dp.callback_query_handler(callback_message, text = "callback_message")
     await dp.callback_query_handler(callback_start_tutor, text = "callback_start_tutor")
-    await dp.callback_query_handler(callback_start_student, text="callback_start_student")
+    #await dp.callback_query_handler(callback_start_student, text="callback_start_student")
 
 if __name__ == "__main__":
     try:
