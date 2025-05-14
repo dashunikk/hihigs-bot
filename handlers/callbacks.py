@@ -11,22 +11,35 @@ async def callback_message(callback:  CallbackQuery):
 
 async def callback_start_tutor(callback: CallbackQuery):
     """Регистрация преподавателя"""
-    await callback.message.answer("Вы выбрали роль преподавателя!")
 
     async with async_session() as session:
-        """Что-то происходит"""
         chars = string.ascii_letters + string.digits + string.punctuation
         new_user = {
             "user_id": callback.from_user.id,
             "username": callback.from_user.username,
             "tutorcode": "".join(choices(chars, k=6))
         }
-        insert_query = insert(User).values()
+        insert_query = insert(User).values(new_user)
         await session.execute(insert_query)
         await session.commit()
         await callback.message.answer("Пользователь добавлен!")
         logging.info(f"Пользователь {callback.from_user.username} добавлен в базу данных с ролью преподаватель!")
 
-async def callback_start_student(callback: CallbackQuery):
-    await callback.message.answer("Вы выбрали роль студента!")
+async def callback_insert_tutorcode(callback: CallbackQuery):
+    """Регистрация слушателя. Ввод кода"""
+    await callback.message.answer("Введите код преподавателя (в формате tutorcode-CODE):")
+
+async def start_student(message):
+    """Регистрация слушателя"""
+    async with async_session() as session:
+        new_user = {
+            "user_id": message.from_user.id,
+            "username": message.from_user.username,
+            "subscribe": str(message.text.split("-")[1])
+        }
+        insert_query = insert(User).values(new_user)
+        await session.execute(insert_query)
+        await session.commit()
+        await message.answer("Пользователь добавлен!")
+        logging.info(f"Пользователь {message.from_user.username} добавлен в базу данных с ролью слушатель!")
 
