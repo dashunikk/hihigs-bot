@@ -13,9 +13,6 @@ async def callback_start_tutor(callback: CallbackQuery):
     """Регистрация преподавателя"""
     await callback.message.answer("Вы выбрали роль преподавателя!")
 
-async def callback_start_student(callback: CallbackQuery):
-    await callback.message.answer("Вы выбрали роль студента!")
-
     async with async_session() as session:
         """Что-то происходит"""
         chars = string.ascii_letters + string.digits + string.punctuation
@@ -29,4 +26,7 @@ async def callback_start_student(callback: CallbackQuery):
         await session.commit()
         await callback.message.answer("Пользователь добавлен!")
         logging.info(f"Пользователь {callback.from_user.username} добавлен в базу данных с ролью преподаватель!")
+
+async def callback_start_student(callback: CallbackQuery):
+    await callback.message.answer("Вы выбрали роль студента!")
 
