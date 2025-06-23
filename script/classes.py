@@ -1,7 +1,7 @@
 __all__ = ['VMConnect']
 
 from paramiko import SSHClient, AutoAddPolicy
-from script.db import get_db_connection, save_command, init_db
+from script.db import get_db_connection, save_user, get_user_role
 
 class VMConnect:
     def __init__(self, address=None, username=None, password=None):
@@ -11,7 +11,7 @@ class VMConnect:
         self.client = SSHClient()
         self.client.set_missing_host_key_policy(AutoAddPolicy())  # Автодобавление ключа хоста
         self.db_conn = get_db_connection()
-        init_db()
+        get_user_role()
 
     def connect(self):
         """Подключается к VM с указанными данными."""
@@ -22,10 +22,10 @@ class VMConnect:
                 password=self.password,
                 timeout=5
             )
-            save_command(self.db_conn, 'connect', f"Успешное подключение к {self.address}")
+            save_user(self.db_conn, 'connect', f"Успешное подключение к {self.address}")
             return True
         except Exception as e:
-            save_command(self.db_conn, 'connect', f"Ошибка подключения: {str(e)}")
+            save_user(self.db_conn, 'connect', f"Ошибка подключения: {str(e)}")
             return False
 
     def check(self):
@@ -34,7 +34,7 @@ class VMConnect:
             transport = self.client.get_transport()
             return transport and transport.is_active()
         except Exception as e:
-            save_command(self.db_conn, 'check', f"Ошибка проверки: {str(e)}")
+            save_user(self.db_conn, 'check', f"Ошибка проверки: {str(e)}")
             return False
 
     def ls(self):
@@ -42,10 +42,10 @@ class VMConnect:
         try:
             stdin, stdout, stderr = self.client.exec_command('ls -l ~')
             output = stdout.read().decode()
-            save_command(self.db_conn, 'ls', output)
+            save_user(self.db_conn, 'ls', output)
             return output
         except Exception as e:
-            save_command(self.db_conn, 'ls', f"Ошибка выполнения ls: {str(e)}")
+            save_user(self.db_conn, 'ls', f"Ошибка выполнения ls: {str(e)}")
             return f"Ошибка: {str(e)}"
 
     def __str__(self):

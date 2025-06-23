@@ -5,26 +5,17 @@ def get_db_connection():
     conn = sqlite3.connect('vm_data.db')
     return conn
 
-def init_db():
-    """Создаёт таблицу vm_commands, если она не существует"""
+async def save_user(user_id: int, username: str):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS vm_commands (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            command TEXT,
-            output TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    cursor.execute("INSERT OR IGNORE INTO users (id, username) VALUES (?, ?)", (user_id, username))
     conn.commit()
     conn.close()
 
-def save_command(conn, command, output):
-    """Сохраняет команду и её результат в базу данных"""
+async def get_user_role(user_id: int) -> str:
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO vm_commands (command, output)
-        VALUES (?, ?)
-    ''', (command, output))
-    conn.commit()
+    cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+    role = cursor.fetchone()[0]  # Предполагается, что роль хранится в столбце 'role'
+    conn.close()
+    return role or "student"  # По умолчанию роль 'student'
