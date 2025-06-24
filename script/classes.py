@@ -1,7 +1,7 @@
 __all__ = ['VMConnect']
 
 from paramiko import SSHClient, AutoAddPolicy
-from script.db import get_db_connection, save_user, get_user_role
+from script.db import get_db_connection, save_vm_data, get_vm_data
 
 class VMConnect:
     def __init__(self, address=None, username=None, password=None):
@@ -9,12 +9,11 @@ class VMConnect:
         self.username = username
         self.password = password
         self.client = SSHClient()
-        self.client.set_missing_host_key_policy(AutoAddPolicy())  # Автодобавление ключа хоста
-        self.db_conn = get_db_connection()
-        get_user_role()
+        self.client.set_missing_host_key_policy(AutoAddPolicy())
+        self.connected = False
 
     def connect(self):
-        """Подключается к VM с указанными данными."""
+        """Подключается к VM"""
         try:
             self.client.connect(
                 hostname=self.address,
@@ -22,37 +21,34 @@ class VMConnect:
                 password=self.password,
                 timeout=5
             )
-            save_user(self.db_conn, 'connect', f"Успешное подключение к {self.address}")
+            self.connected = True
             return True
         except Exception as e:
-            save_user(self.db_conn, 'connect', f"Ошибка подключения: {str(e)}")
             return False
 
-    def check(self):
-        """Проверяет, активно ли подключение."""
-        try:
-            transport = self.client.get_transport()
-            return transport and transport.is_active()
-        except Exception as e:
-            save_user(self.db_conn, 'check', f"Ошибка проверки: {str(e)}")
-            return False
+    def check_connection(self):
+        """Проверяет подключение"""
+        return self.connected
 
-    def ls(self):
-        """Выводит содержимое домашней директории."""
-        try:
-            stdin, stdout, stderr = self.client.exec_command('ls -l ~')
-            output = stdout.read().decode()
-            save_user(self.db_conn, 'ls', output)
-            return output
-        except Exception as e:
-            save_user(self.db_conn, 'ls', f"Ошибка выполнения ls: {str(e)}")
-            return f"Ошибка: {str(e)}"
+    def list_files(self):
+        """Список файлов в домашней директории"""
+        if not self.connected:
+            return "Нет подключения"
+        stdin, stdout, stderr = self.client.exec_command('ls ~')
+        return stdout.read().decode()
+
+    def read_file(self, filename):
+        """Читает содержимое файла"""
+        if not self.connected:
+            return "Нет подключения"
+        stdin, stdout, stderr = self.client.exec_command(f'cat ~/{filename}')
+        return stdout.read().decode()
 
     def __str__(self):
-        return f"VMConnect[address={self.address}, user={self.username}]"
+        return f"Подключение к {self.address} как {self.username}"
 
     def __bool__(self):
-        return self.check()
+        return self.connected
 
     def __enter__(self):
         self.connect()
@@ -60,4 +56,3 @@ class VMConnect:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.client.close()
-        self.db_conn.close()

@@ -93,6 +93,82 @@ async def check_command(message: types.Message):
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
 
+
+async def vmpath_command(message: types.Message):
+    """Обработчик команды /vmpath"""
+    try:
+        parts = message.text.split()
+        if len(parts) != 4:
+            await message.answer("Используйте: /vmpath <ip> <username> <password>")
+            return
+
+        ip, username, password = parts[1], parts[2], parts[3]
+        save_vm_data(message.from_user.id, ip, username, password)
+
+        vm = VMConnect(ip, username, password)
+        if vm.connect():
+            await message.answer(f"Данные ВМ сохранены. Подключение успешно: {ip}")
+        else:
+            await message.answer("Ошибка подключения к ВМ. Данные сохранены, но подключение не удалось.")
+    except Exception as e:
+        await message.answer(f"Ошибка: {str(e)}")
+
+
+async def check_command(message: types.Message):
+    """Обработчик команды /check"""
+    try:
+        vm_data = get_vm_data(message.from_user.id)
+        if not vm_data:
+            await message.answer("Сначала укажите данные ВМ через /vmpath.")
+            return
+
+        vm = VMConnect(*vm_data)
+        if vm.connect():
+            await message.answer("Подключение к ВМ успешно!")
+        else:
+            await message.answer("Не удалось подключиться к ВМ.")
+    except Exception as e:
+        await message.answer(f"Ошибка: {str(e)}")
+
+
+async def ls_command(message: types.Message):
+    """Обработчик команды /ls"""
+    try:
+        vm_data = get_vm_data(message.from_user.id)
+        if not vm_data:
+            await message.answer("Сначала укажите данные ВМ через /vmpath.")
+            return
+
+        vm = VMConnect(*vm_data)
+        if vm.connect():
+            files = vm.list_files()
+            await message.answer(f"Файлы в домашней директории:\n{files}")
+        else:
+            await message.answer("Не удалось подключиться к ВМ.")
+    except Exception as e:
+        await message.answer(f"Ошибка: {str(e)}")
+
+
+async def cat_command(message: types.Message):
+    """Обработчик команды /cat"""
+    try:
+        vm_data = get_vm_data(message.from_user.id)
+        if not vm_data:
+            await message.answer("Сначала укажите данные ВМ через /vmpath.")
+            return
+
+        vm = VMConnect(*vm_data)
+        if vm.connect():
+            files = vm.list_files().split()
+            for filename in files:
+                if filename.endswith('.txt'):
+                    content = vm.read_file(filename)
+                    await message.answer(f"Содержимое {filename}:\n{content}")
+        else:
+            await message.answer("Не удалось подключиться к ВМ.")
+    except Exception as e:
+        await message.answer(f"Ошибка: {str(e)}")
+
 async def register_message_handlers(router: Router):
     """Маршрутизация обработчиков"""
     router.message.register(process_start_command, filters.Command(commands=["start"]))
@@ -104,3 +180,5 @@ async def register_message_handlers(router: Router):
     #router.callback_query.register(callback_start_student, F.data.endswith("_student"))
     router.callback_query.register(callback_insert_tutorcode, F.data.endswith("_student"))
     router.message.register(start_student, F.text.startswith("tutorcode-"))
+    router.message.register(ls_command, filters.Command(commands=["ls"]))
+    router.message.register(cat_command, filters.Command(commands=["cat"]))
