@@ -9,6 +9,7 @@ from utils import setup_logger
 from handlers import set_commands
 from db import async_create_table
 from handlers.callbacks import callback_message, callback_start_tutor
+from script.classes import VMConnect
 
 async def main():
     """
