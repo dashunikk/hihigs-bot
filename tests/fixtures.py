@@ -5,13 +5,6 @@ from unittest.mock import AsyncMock, patch
 from aiogram.types import Message
 from aiogram import Router
 
-# Фикстуры в pytest позволяют выносить в отдельные функции типовые действия
-# например: настройка тестового окружения, создание тестовых данных, выполнение завершающие действия
-# https://habr.com/ru/articles/731296/
-
-
-#TODO - не работают тесты надо доделать
-
 @pytest.fixture
 def mock_bot():
     """Mock бот"""

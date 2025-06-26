@@ -3,12 +3,6 @@ __all__ = [
     "Base",
 ]
 
-# Про ORM-паттерн асинхронного sqlalchemy и модели
-# https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#synopsis-orm
-
-# декларативная модель базы данных python
-# https://metanit.com/python/database/3.2.php
-
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, DATE, Integer, VARCHAR, Text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -28,10 +22,9 @@ class User(Base):
     vm_username = Column(VARCHAR(50), nullable=True)
     vm_password = Column(VARCHAR(100), nullable=True)
 
-# Инициализация движка и сессии
 engine = create_async_engine(
     "sqlite+aiosqlite:///instance/sqlite.db",
-    echo=True  # Логирование SQL-запросов
+    echo=True
 )
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 

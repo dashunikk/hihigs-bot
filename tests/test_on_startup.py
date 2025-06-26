@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# TODO костыль
 parent = Path(f"{os.getcwd()}").parent
 
 

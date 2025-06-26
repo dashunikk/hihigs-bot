@@ -11,7 +11,7 @@ from .base import Base
 
 engine = create_async_engine(
     url="sqlite+aiosqlite:///instance/sqlite.db",
-    echo=True,  # Логирование SQL-запросов
+    echo=True,
     future=True
 )
 async_session = async_sessionmaker(engine, expire_on_commit=False)
@@ -22,9 +22,8 @@ async def async_create_table() -> None:
         await conn.run_sync(Base.metadata.create_all)
         logging.info("Tables created successfully")
 
-# Синхронное подключение для обычных SQL-запросов
 def get_db_connection():
     """Возвращает синхронное соединение с SQLite"""
     conn = sqlite3.connect('instance/sqlite.db')
-    conn.row_factory = sqlite3.Row  # Для доступа к полям по имени
+    conn.row_factory = sqlite3.Row
     return conn

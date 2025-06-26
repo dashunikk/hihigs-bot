@@ -63,10 +63,9 @@ async def process_status_command(message: types.Message):
 
         info = status_string.format(user.user_id, user.username)
 
-        # Изменение: проверяем tutorcode вместо tutorcode (согласно models.py)
         if user.tutorcode:
             info += f"Код преподавателя: {user.tutorcode}"
-        # Изменение: проверяем subscribe вместо subscribe
+
         elif user.subscribe:
             query = select(User).where(User.tutorcode == user.subscribe)
             tutor = (await session.execute(query)).scalar()
@@ -98,7 +97,7 @@ async def vmpath_command(message: types.Message):
                 )
                 await session.execute(stmt)
             else:
-                # Изменение: создаем пользователя с обязательными полями согласно models.py
+
                 user = User(
                     user_id=message.from_user.id,
                     username=message.from_user.username,

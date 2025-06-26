@@ -10,8 +10,3 @@ async def test_main(mock_bot, mock_dispatcher, mock_set_commands, mock_router_ha
 
     # Проверка
     mock_dispatcher.start_polling.assert_awaited_once_with(mock_bot)
-
-    # TODO - техдолг: доделать вызовы функций
-    # mock_dispatcher.include_routers.assert_awaited_once_with(mock_router_handlers, mock_router_callbacks)
-    # mock_bot.set_commands.assert_awaited_once(mock_bot)
-    # mock_setup_logger.assert_awaited_once()
