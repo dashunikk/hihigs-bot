@@ -8,9 +8,12 @@ __all__ = [
 
 # декларативная модель базы данных python
 # https://metanit.com/python/database/3.2.php
+
 from sqlalchemy.orm import DeclarativeBase
+from .base import Base
 from sqlalchemy import Column, DATE, Integer, VARCHAR, Text
 from sqlalchemy.ext.asyncio import create_async_engine
+from db.engine import get_db_connection
 
 
 class Base(DeclarativeBase):
