@@ -9,11 +9,15 @@ from .keyboard import keyboard_continue, keyboard_start  # импорт из к�
 from .callbacks import callback_message, callback_start_tutor, callback_insert_tutorcode, start_student # импорт из коллбека
 from script.classes import VMConnect
 from db.models import save_user, get_user_role, save_vm_data, get_vm_data
+import logging
+
+router = Router()
 
 # информация о статусе
 status_string: str = """
 UserId: {}
 UserName: {}
+Вызовите команду /vmpath для указания адреса виртуальной машины 
 """
 
 async def process_help_command(message):
@@ -24,15 +28,22 @@ async def process_start_command(message: types.Message):
     """Команда регистрации и справки"""
     #Проверка на наличие пользователя в бд
     async with async_session() as session:
+        logging.info(f"Checking user in DB: {message.from_user.id}")
         query = select(User).where(message.from_user.id == User.user_id)
         result = await session.execute(query)
+        users = result.scalars().all()
+        logging.info(f"Query result: {users}")
+
         #если пользователь в бд есть
         if result.scalars().all():
             info = "Чтобы продолжить, вызовите команду /status"
             await message.answer(info)
+
         #если пользователя нет в бд
         else:
             await  message.answer("Выберите роль", reply_markup=keyboard_start)
+
+        await session.commit()
 
 async def process_status_command(message: types.Message):
         """Команда регистрации и справки"""
@@ -132,6 +143,13 @@ async def cat_command(message: types.Message):
             await message.answer("Не удалось подключиться к ВМ.")
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
+
+query = select(
+    User.user_id,
+    User.username,
+    User.tutorcode,
+    User.subscribe
+)
 
 async def register_message_handlers(router: Router):
     """Маршрутизация обработчиков"""
