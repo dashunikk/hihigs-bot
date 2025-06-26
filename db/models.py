@@ -22,7 +22,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "user_table"
     user_id = Column(Integer, primary_key=True)
-    username = Column(VARCHAR(255), unique=False, nullable=False)
+    username = Column(VARCHAR(255), nullable=False)
     tutorcode = Column(VARCHAR(6), unique=False)
     subscribe = Column(VARCHAR(6), unique=False)
     extra = Column(Text, unique=False)
@@ -34,7 +34,7 @@ async def init_db():
     """Инициализация базы данных и создание таблиц"""
     # Создаем асинхронный движок для SQLite
     engine = create_async_engine(
-        "sqlite+aiosqlite:///sqlite.db",
+        "sqlite+aiosqlite:///instance/sqlite.db",
         echo=True  # Включаем логирование SQL-запросов для отладки
     )
 
