@@ -2,15 +2,21 @@ __all__ = [
     "register_message_handlers",
 ]
 
-from aiogram import types, Router, filters, F, Dispatcher
-from sqlalchemy import update, select
-from db import async_session, User
-from .keyboard import keyboard_continue, keyboard_start  # импорт из клавиатур
-from .callbacks import callback_message, callback_start_tutor, callback_insert_tutorcode, start_student # импорт из коллбека
-from script.classes import VMConnect
-from db.models import save_user, get_user_role, save_vm_data, get_vm_data
-import logging
+from aiogram import types, Router, filters, F
+from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
+import logging
+
+from db import async_session
+from db.models import User  # Изменение: импорт User из db.models вместо db
+from .keyboard import keyboard_continue, keyboard_start
+from .callbacks import (
+    callback_message,
+    callback_start_tutor,
+    callback_insert_tutorcode,
+    start_student
+)
+from script.classes import VMConnect
 
 router = Router()
 
@@ -21,55 +27,53 @@ UserName: {}
 Вызовите команду /vmpath для указания адреса виртуальной машины 
 """
 
+
 async def process_help_command(message):
     """Команда help"""
     await message.answer("Помоги!", reply_markup=keyboard_continue)
 
+
 async def process_start_command(message: types.Message):
     """Команда регистрации и справки"""
-    #Проверка на наличие пользователя в бд
     async with async_session() as session:
         logging.info(f"Checking user in DB: {message.from_user.id}")
-        query = select(User).where(message.from_user.id == User.user_id)
+        # Изменение: используем User.user_id вместо message.from_user.id в where
+        query = select(User).where(User.user_id == message.from_user.id)
         result = await session.execute(query)
-        users = result.scalars().all()
-        logging.info(f"Query result: {users}")
+        user = result.scalar()  # Изменение: используем scalar() вместо scalars().all()
+        logging.info(f"Query result: {user}")
 
-        #если пользователь в бд есть
-        if result.scalars().all():
+        if user:
             info = "Чтобы продолжить, вызовите команду /status"
             await message.answer(info)
-
-        #если пользователя нет в бд
         else:
-            await  message.answer("Выберите роль", reply_markup=keyboard_start)
+            await message.answer("Выберите роль", reply_markup=keyboard_start)
 
-        await session.commit()
 
 async def process_status_command(message: types.Message):
-        """Команда регистрации и справки"""
-        # Проверка на наличие пользователя в бд
-        async with async_session() as session:
-            query = select(User).where(message.from_user.id == User.user_id)
-            result = await session.execute(query)
-            user = result.scalar()
-            # если пользователь в преподаватель
-            if user.tutorcode:
-                info = status_string + "Код преподавателя: {}"
-                info = info.format(user.user_id, user.username, user.tutorcode)
+    """Команда регистрации и справки"""
+    async with async_session() as session:
+        query = select(User).where(User.user_id == message.from_user.id)
+        result = await session.execute(query)
+        user = result.scalar()
 
-            # если пользователь слушатель
-            if user.subscribe:
-                code = str(user.subscribe)
-                info = status_string + "Преподаватель: {}"
-                query = select(User).where(code == User.tutorcode)
-                result = await session.execute(query)
-                tutor = result.scalar()
-                try:
-                    info = info.format(user.user_id, user.username, tutor.username)
-                except:
-                    info = info.format(user.user_id, user.username)
-            await message.answer(info)
+        if not user:
+            await message.answer("Сначала зарегистрируйтесь через /start")
+            return
+
+        info = status_string.format(user.user_id, user.username)
+
+        # Изменение: проверяем tutorcode вместо tutorcode (согласно models.py)
+        if user.tutorcode:
+            info += f"Код преподавателя: {user.tutorcode}"
+        # Изменение: проверяем subscribe вместо subscribe
+        elif user.subscribe:
+            query = select(User).where(User.tutorcode == user.subscribe)
+            tutor = (await session.execute(query)).scalar()
+            if tutor:
+                info += f"Преподаватель: {tutor.username}"
+
+        await message.answer(info)
 
 
 async def vmpath_command(message: types.Message):
@@ -80,11 +84,9 @@ async def vmpath_command(message: types.Message):
             return
 
         async with async_session() as session:
-            # Проверяем существование пользователя
             user = await session.get(User, message.from_user.id)
 
             if user:
-                # Обновляем существующую запись
                 stmt = (
                     update(User)
                     .where(User.user_id == message.from_user.id)
@@ -94,10 +96,12 @@ async def vmpath_command(message: types.Message):
                         vm_password=parts[3]
                     )
                 )
+                await session.execute(stmt)
             else:
-                # Создаем новую запись
+                # Изменение: создаем пользователя с обязательными полями согласно models.py
                 user = User(
                     user_id=message.from_user.id,
+                    username=message.from_user.username,
                     vm_ip=parts[1],
                     vm_username=parts[2],
                     vm_password=parts[3]
@@ -117,6 +121,9 @@ async def check_command(message: types.Message):
     try:
         async with async_session() as session:
             user = await session.get(User, message.from_user.id)
+            if not user or not user.vm_ip:
+                await message.answer("Сначала укажите данные ВМ через /vmpath.")
+                return
 
             vm = VMConnect(
                 address=user.vm_ip,
@@ -137,7 +144,6 @@ async def ls_command(message: types.Message):
     try:
         async with async_session() as session:
             user = await session.get(User, message.from_user.id)
-
             if not user or not user.vm_ip:
                 await message.answer("Сначала укажите данные ВМ через /vmpath.")
                 return
@@ -148,7 +154,7 @@ async def ls_command(message: types.Message):
                 password=user.vm_password
             )
 
-            if vm.connect():  # Проверяем подключение
+            if vm.connect():
                 files = vm.list_files()
                 await message.answer(f"Файлы в домашней директории:\n{files}")
             else:
@@ -157,32 +163,32 @@ async def ls_command(message: types.Message):
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
 
-async def cat_command(message: types.Message):
-    """Обработчик команды /cat"""
-    try:
-        vm_data = get_vm_data(message.from_user.id)
-        if not vm_data:
-            await message.answer("Сначала укажите данные ВМ через /vmpath.")
-            return
 
-        vm = VMConnect(*vm_data)
-        if vm.connect():
-            files = vm.list_files().split()
-            for filename in files:
-                if filename.endswith('.txt'):
-                    content = vm.read_file(filename)
-                    await message.answer(f"Содержимое {filename}:\n{content}")
-        else:
-            await message.answer("Не удалось подключиться к ВМ.")
+async def cat_command(message: types.Message):
+    try:
+        async with async_session() as session:
+            user = await session.get(User, message.from_user.id)
+            if not user or not user.vm_ip:
+                await message.answer("Сначала укажите данные ВМ через /vmpath.")
+                return
+
+            vm = VMConnect(
+                address=user.vm_ip,
+                username=user.vm_username,
+                password=user.vm_password
+            )
+
+            if vm.connect():
+                files = vm.list_files().split()
+                for filename in files:
+                    if filename.endswith('.txt'):
+                        content = vm.read_file(filename)
+                        await message.answer(f"Содержимое {filename}:\n{content}")
+            else:
+                await message.answer("Не удалось подключиться к ВМ.")
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
 
-query = select(
-    User.user_id,
-    User.username,
-    User.tutorcode,
-    User.subscribe
-)
 
 async def register_message_handlers(router: Router):
     """Маршрутизация обработчиков"""
@@ -191,10 +197,8 @@ async def register_message_handlers(router: Router):
     router.message.register(vmpath_command, filters.Command(commands=["vmpath"]))
     router.message.register(check_command, filters.Command(commands=["check"]))
     router.message.register(ls_command, filters.Command(commands=["ls"]))
+    router.message.register(cat_command, filters.Command(commands=["cat"]))
     router.callback_query.register(callback_message, F.data.endswith("_continue"))
     router.callback_query.register(callback_start_tutor, F.data.endswith("_tutor"))
-    #router.callback_query.register(callback_start_student, F.data.endswith("_student"))
     router.callback_query.register(callback_insert_tutorcode, F.data.endswith("_student"))
     router.message.register(start_student, F.text.startswith("tutorcode-"))
-    router.message.register(ls_command, filters.Command(commands=["ls"]))
-    router.message.register(cat_command, filters.Command(commands=["cat"]))
