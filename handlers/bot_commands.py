@@ -8,5 +8,6 @@ async def set_commands(bot):
         BotCommand(command='vmpath', description='Saving a VM'),
         BotCommand(command='check', description='Checking the connection'),
         BotCommand(command='ls', description='List directory contents'),
+        BotCommand(command='cat', description='Contents of all text files'),
     ]
     await bot.set_my_commands(commands, scope=BotCommandScopeDefault())
