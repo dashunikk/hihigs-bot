@@ -3,13 +3,14 @@ __all__ = [
 ]
 
 from aiogram import types, Router, filters, F, Dispatcher
-from sqlalchemy import select
+from sqlalchemy import update, select
 from db import async_session, User
 from .keyboard import keyboard_continue, keyboard_start  # импорт из клавиатур
 from .callbacks import callback_message, callback_start_tutor, callback_insert_tutorcode, start_student # импорт из коллбека
 from script.classes import VMConnect
 from db.models import save_user, get_user_role, save_vm_data, get_vm_data
 import logging
+from sqlalchemy.exc import SQLAlchemyError
 
 router = Router()
 
@@ -70,6 +71,7 @@ async def process_status_command(message: types.Message):
                     info = info.format(user.user_id, user.username)
             await message.answer(info)
 
+
 async def vmpath_command(message: types.Message):
     try:
         parts = message.text.split()
@@ -77,52 +79,83 @@ async def vmpath_command(message: types.Message):
             await message.answer("Используйте: /vmpath <ip> <username> <password>")
             return
 
-        ip, username, password = parts[1], parts[2], parts[3]
-        vm = VMConnect(address=ip, username=username, password=password)
+        async with async_session() as session:
+            # Проверяем существование пользователя
+            user = await session.get(User, message.from_user.id)
 
-        if vm.connect():
-            await save_user(message.from_user.id, ip, username, password)  # Сохранение в БД
-            await message.answer(f"Данные ВМ сохранены: {ip}")
-        else:
-            await message.answer("Ошибка подключения к ВМ.")
+            if user:
+                # Обновляем существующую запись
+                stmt = (
+                    update(User)
+                    .where(User.user_id == message.from_user.id)
+                    .values(
+                        vm_ip=parts[1],
+                        vm_username=parts[2],
+                        vm_password=parts[3]
+                    )
+                )
+            else:
+                # Создаем новую запись
+                user = User(
+                    user_id=message.from_user.id,
+                    vm_ip=parts[1],
+                    vm_username=parts[2],
+                    vm_password=parts[3]
+                )
+                session.add(user)
+
+            await session.commit()
+            await message.answer(f"Данные ВМ сохранены: {parts[1]}")
+
+    except SQLAlchemyError as e:
+        await message.answer(f"Ошибка базы данных: {str(e)}")
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
+
 
 async def check_command(message: types.Message):
     try:
-        # Получаем сохранённые данные из БД (примерная функция)
-        ip, username, password = await get_user_role(message.from_user.id)
-        if not ip:
-            await message.answer("Сначала укажите данные ВМ через /vmpath.")
-            return
+        async with async_session() as session:
+            user = await session.get(User, message.from_user.id)
 
-        vm = VMConnect(address=ip, username=username, password=password)
-        if vm.check():
-            await message.answer("Подключение к ВМ активно.")
-        else:
-            await message.answer("Подключение к ВМ неактивно.")
+            vm = VMConnect(
+                address=user.vm_ip,
+                username=user.vm_username,
+                password=user.vm_password
+            )
+
+            if vm.check_connection():
+                await message.answer("Подключение к ВМ активно.")
+            else:
+                await message.answer("Подключение к ВМ неактивно.")
+
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
-
 
 
 async def ls_command(message: types.Message):
-    """Обработчик команды /ls"""
     try:
-        vm_data = get_vm_data(message.from_user.id)
-        if not vm_data:
-            await message.answer("Сначала укажите данные ВМ через /vmpath.")
-            return
+        async with async_session() as session:
+            user = await session.get(User, message.from_user.id)
 
-        vm = VMConnect(*vm_data)
-        if vm.connect():
-            files = vm.list_files()
-            await message.answer(f"Файлы в домашней директории:\n{files}")
-        else:
-            await message.answer("Не удалось подключиться к ВМ.")
+            if not user or not user.vm_ip:
+                await message.answer("Сначала укажите данные ВМ через /vmpath.")
+                return
+
+            vm = VMConnect(
+                address=user.vm_ip,
+                username=user.vm_username,
+                password=user.vm_password
+            )
+
+            if vm.connect():  # Проверяем подключение
+                files = vm.list_files()
+                await message.answer(f"Файлы в домашней директории:\n{files}")
+            else:
+                await message.answer("Не удалось подключиться к ВМ.")
+
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
-
 
 async def cat_command(message: types.Message):
     """Обработчик команды /cat"""
