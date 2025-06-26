@@ -6,8 +6,8 @@ __all__ = [
 import sqlite3
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
-from .models import Base
 import logging
+from .base import Base
 
 engine = create_async_engine(
     url="sqlite+aiosqlite:///instance/sqlite.db",
