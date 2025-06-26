@@ -190,6 +190,7 @@ async def register_message_handlers(router: Router):
     router.message.register(process_status_command, filters.Command(commands=["status"]))
     router.message.register(vmpath_command, filters.Command(commands=["vmpath"]))
     router.message.register(check_command, filters.Command(commands=["check"]))
+    router.message.register(ls_command, filters.Command(commands=["ls"]))
     router.callback_query.register(callback_message, F.data.endswith("_continue"))
     router.callback_query.register(callback_start_tutor, F.data.endswith("_tutor"))
     #router.callback_query.register(callback_start_student, F.data.endswith("_student"))
