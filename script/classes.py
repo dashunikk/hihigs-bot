@@ -1,7 +1,6 @@
 __all__ = ['VMConnect']
 
 from paramiko import SSHClient, AutoAddPolicy
-from script.db import get_db_connection, save_vm_data, get_vm_data
 
 class VMConnect:
     def __init__(self, address=None, username=None, password=None):

@@ -8,7 +8,7 @@ from db import async_session, User
 from .keyboard import keyboard_continue, keyboard_start  # импорт из клавиатур
 from .callbacks import callback_message, callback_start_tutor, callback_insert_tutorcode, start_student # импорт из коллбека
 from script.classes import VMConnect
-from script.db import save_user, get_user_role
+from db.models import save_user, get_user_role, save_vm_data, get_vm_data
 
 # информация о статусе
 status_string: str = """
@@ -93,42 +93,6 @@ async def check_command(message: types.Message):
     except Exception as e:
         await message.answer(f"Ошибка: {str(e)}")
 
-
-async def vmpath_command(message: types.Message):
-    """Обработчик команды /vmpath"""
-    try:
-        parts = message.text.split()
-        if len(parts) != 4:
-            await message.answer("Используйте: /vmpath <ip> <username> <password>")
-            return
-
-        ip, username, password = parts[1], parts[2], parts[3]
-        save_vm_data(message.from_user.id, ip, username, password)
-
-        vm = VMConnect(ip, username, password)
-        if vm.connect():
-            await message.answer(f"Данные ВМ сохранены. Подключение успешно: {ip}")
-        else:
-            await message.answer("Ошибка подключения к ВМ. Данные сохранены, но подключение не удалось.")
-    except Exception as e:
-        await message.answer(f"Ошибка: {str(e)}")
-
-
-async def check_command(message: types.Message):
-    """Обработчик команды /check"""
-    try:
-        vm_data = get_vm_data(message.from_user.id)
-        if not vm_data:
-            await message.answer("Сначала укажите данные ВМ через /vmpath.")
-            return
-
-        vm = VMConnect(*vm_data)
-        if vm.connect():
-            await message.answer("Подключение к ВМ успешно!")
-        else:
-            await message.answer("Не удалось подключиться к ВМ.")
-    except Exception as e:
-        await message.answer(f"Ошибка: {str(e)}")
 
 
 async def ls_command(message: types.Message):

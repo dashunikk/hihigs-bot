@@ -7,7 +7,7 @@ from config import TOKEN
 from handlers import register_message_handlers
 from utils import setup_logger
 from handlers import set_commands
-from script.db import init_db
+from db.models import init_db
 from db import async_create_table
 
 async def main():
@@ -15,7 +15,7 @@ async def main():
     Основная функция для установки конфигурации бота.
     """
     # Инициализация базы данных
-    init_db()
+    await init_db()
 
     # Экземпляры бота и диспетчеры
     bot = Bot(token=TOKEN)
