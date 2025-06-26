@@ -12,7 +12,8 @@ from .base import Base
 engine = create_async_engine(
     url="sqlite+aiosqlite:///instance/sqlite.db",
     echo=True,
-    future=True
+    future=True,
+    pool_pre_ping=True
 )
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
